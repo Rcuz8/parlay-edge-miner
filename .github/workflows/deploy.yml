@@ -49,5 +49,5 @@ jobs:
             --env TWILIO_SID=${{ secrets.TWILIO_SID }} \
             --env TWILIO_TOKEN=${{ secrets.TWILIO_TOKEN }} \
             --env TWILIO_FROM=${{ secrets.TWILIO_FROM }} \
-            --env TWILIO_TO=${{ secrets.TWILIO_TO }} \
+            --env TWILIO_TO=+19086421391 \
             --remote-build
