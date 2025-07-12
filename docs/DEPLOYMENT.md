@@ -1,48 +1,22 @@
 # Deployment & CI/CD
 
-## Continuous Integration (GitHub Actions)
+## Overview
 
-* **`ci.yml`** – runs on every push / PR
-  1. Checkout, install dependencies with cache
-  2. `yarn lint`, `yarn test --coverage`, `yarn turbo run build`
-  3. Coverage gate: `parlay-engine` ≥90 %, packages ≥80 %
+The repository is deployed via GitHub Actions using two workflows:
 
-## Continuous Delivery (GitHub Actions)
+* **CI (`ci.yml`)** – Validates code quality, tests, and build integrity on every push or pull request.
+* **CD (`deploy.yml`)** – On merge to `main`, builds a Docker image and deploys it to DigitalOcean Functions through DOCR.
 
-* **`deploy.yml`** – triggers on merge to `main`
-  1. Build monorepo (`turbo run build`)
-  2. Login to DigitalOcean Container Registry (DOCR)
-  3. `docker build` image tagged with commit SHA
-  4. Push to DOCR
-  5. `doctl serverless deploy` updates scheduled function with new image & secrets
+The infrastructure stack is codified in `infra/terraform/` and consists of a starter-tier DO Container Registry and a Node 18 DigitalOcean Function scheduled at 15:00 UTC daily.
 
-Secrets expected in repo settings:
-* `DO_TOKEN`, `DO_USER`, `DO_PSW` – Container registry & API auth
-* `OPENAI_API_KEY`, `ODDS_API_KEY`, `TWILIO_*` – runtime secrets
+## LLM Frameworks
 
-## Infrastructure-as-Code (Terraform)
+LangChain, LangSmith, and LangGraph are **not** part of the runtime.  Tracing is opt-in via the lightweight helper in `@parlay/common-config`.
 
-Located in `infra/terraform/`.
+## Release Flow
 
-```bash
-# Initialise & deploy
-terraform -chdir=infra/terraform init
-terraform -chdir=infra/terraform apply -var="do_token=$DO_TOKEN" -var="openai_key=$OPENAI_API_KEY" ...
-```
+1. Commit changes following Conventional Commits.
+2. Push branch – CI runs and must pass.
+3. Create PR → merge to `main` – CD workflow builds & deploys the latest image.
 
-Resources:
-* `digitalocean_container_registry.edge` – starter-tier registry
-* `digitalocean_functions_function.edge_miner` – Node 18 serverless function with scheduled trigger `0 15 * * *` (15:00 UTC)
-
-## Manual Release
-
-```bash
-# Build function image
-DOCKER_TAG=$(git rev-parse --short HEAD)
-docker build -t registry.digitalocean.com/parlay-edge/edge:$DOCKER_TAG .
-docker push registry.digitalocean.com/parlay-edge/edge:$DOCKER_TAG
-
-doctl serverless deploy parlay-edge \
-  --env-file .env.production \
-  --image registry.digitalocean.com/parlay-edge/edge:$DOCKER_TAG
-```
+Secrets required by the CD workflow are listed in the workflow file itself; Terraform variable definitions are the single source of truth for runtime environment variables.

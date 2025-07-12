@@ -8,59 +8,45 @@ A serverless monorepo that identifies positive-edge (\+EV) 2–3 leg MLB money-l
 
 ```mermaid
 graph TD
-  subgraph DigitalOcean
-    F[Serverless Function (edge-miner)] -->|cron 15:00 UTC| H(Handler)
+  subgraph "DigitalOcean"
+    fn["Serverless Function<br/>edge-miner"] -->|"cron 15:00 UTC"| handler[Handler]
   end
 
-  subgraph Monorepo
-    H --> Nest(AppModule)
-    Nest --> OddsService
-    Nest --> StatsService
-    Nest --> ParlayService
-    Nest --> NotifierService
+  subgraph "Monorepo"
+    handler --> app["NestJS AppModule"]
+    app --> odds[OddsService]
+    app --> stats[StatsService]
+    app --> parlay[ParlayService]
+    app --> notify[NotifierService]
 
-    OddsService -->|Axios| OddsClient
-    StatsService -->|Axios| MlbStatsClient
-    ParlayService -->|pure fns| ParlayEngine
-    ParlayService --> LlmProb(OpenAI)
+    odds -->|"Axios"| oddsClient[OddsClient]
+    stats -->|"Axios"| statsClient[MLB_Stats_Client]
+    parlay -->|"pure fns"| engine[ParlayEngine]
+    parlay --> llm[LlmProb]
   end
 
-  NotifierService --> TwilioSMS
+  notify --> sms[Twilio_SMS]
 ```
 
 ---
 
-## Quick Start
+## Deployment Target
 
-```bash
-# Install (Yarn 4 Berry)
-yarn install --immutable
+The build pipeline (GitHub Actions `deploy.yml`) produces a Docker image (`registry.digitalocean.com/parlay-edge/edge:<sha>`).  That image contains the compiled NestJS serverless bundle located at `apps/edge-miner/dist`. The image is pushed to DigitalOcean Container Registry (DOCR) and referenced by the `digitalocean_functions_function.edge_miner` resource in Terraform.
 
-# Build all packages
-yarn turbo run build
+At runtime DigitalOcean Functions executes `dist/handler.js` on a daily cron (`0 15 * * *`).
 
-# Run unit tests with coverage
-yarn test
+## LLM Tracing
 
-# Execute smoke test against compiled handler
-yarn smoke
-```
+No LangChain, LangSmith or LangGraph frameworks are included.  A minimal `trace()` helper is provided in `@parlay/common-config` that simply logs structured trace events via Pino when `LANGCHAIN_TRACING=true`.
 
-Deployments are automated from `main` via GitHub Actions → DigitalOcean Functions.
+## Environment Configuration
+
+Runtime configuration is supplied exclusively through environment variables (validated by Zod).  See `infra/terraform/variables.tf` for the authoritative list.
 
 ---
 
-## Environment Variables
-
-| Variable           | Description               |
-| ------------------ | ------------------------- |
-| `OPENAI_API_KEY`   | OpenAI access token       |
-| `ODDS_API_KEY`     | The Odds API token        |
-| `TWILIO_SID`       | Twilio Account SID        |
-| `TWILIO_TOKEN`     | Twilio Auth Token         |
-| `TWILIO_FROM`      | Sender phone number       |
-| `TWILIO_TO`        | Subscriber phone number   |
-| `LANGCHAIN_TRACING`| `true` to enable tracing  |
+*All command-line examples have been removed from this document to avoid drift; refer to CI workflow files (`ci.yml`, `deploy.yml`) and package manifests for the current canonical build and test steps.*
 
 ---
 
