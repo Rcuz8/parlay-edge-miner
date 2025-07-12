@@ -31,7 +31,7 @@ jobs:
           token: ${{ secrets.DO_TOKEN }}
       - run: |
           doctl registry login --expiry-seconds 600
-          docker build -t registry.digitalocean.com/parlay-edge/edge:${{ github.sha }} .
+          docker build -f apps/edge-miner/Dockerfile -t registry.digitalocean.com/parlay-edge/edge:${{ github.sha }} .
           docker push registry.digitalocean.com/parlay-edge/edge:${{ github.sha }}
           doctl serverless deploy parlay-edge \
             --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
