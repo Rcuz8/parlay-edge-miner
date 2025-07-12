@@ -16,6 +16,9 @@ RUN yarn install --immutable
 # Build only the edge-miner app (skipping tests and other packages)
 RUN yarn turbo run build --filter=apps/edge-miner
 
+# Prune dependencies to production-only for the edge-miner workspace
+RUN yarn workspaces focus --production @parlay/edge-miner
+
 # ---- Runtime stage ----
 FROM node:20-alpine
 
@@ -32,9 +35,10 @@ COPY --from=builder /workspace/apps/edge-miner/package.json ./package.json
 RUN corepack enable && corepack prepare yarn@4.1.0 --activate
 COPY --from=builder /workspace/package.json ./
 COPY --from=builder /workspace/yarn.lock ./
+# Copy production node_modules and yarn artifacts from builder
+COPY --from=builder /workspace/node_modules ./node_modules
 COPY --from=builder /workspace/.yarn ./ ./.yarn
 COPY --from=builder /workspace/.yarnrc.yml ./
-RUN yarn workspaces focus --production apps/edge-miner
 
 EXPOSE 8080
 
