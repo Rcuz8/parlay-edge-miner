@@ -25,19 +25,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-${{ hashFiles('**/yarn.lock') }}-
             ${{ runner.os }}-turbo-
-      - run: yarn turbo run build
+      - run: yarn turbo run build --filter=apps/edge-miner
       - uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DO_TOKEN }}
       - run: |
-          doctl registry login --expiry-seconds 600
-          docker build -f apps/edge-miner/Dockerfile -t registry.digitalocean.com/parlay-edge/edge:${{ github.sha }} .
-          docker push registry.digitalocean.com/parlay-edge/edge:${{ github.sha }}
-          doctl serverless deploy parlay-edge \
+          doctl serverless deploy apps/edge-miner/dist \
             --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
             --env ODDS_API_KEY=${{ secrets.ODDS_API_KEY }} \
             --env TWILIO_SID=${{ secrets.TWILIO_SID }} \
             --env TWILIO_TOKEN=${{ secrets.TWILIO_TOKEN }} \
             --env TWILIO_FROM=${{ secrets.TWILIO_FROM }} \
             --env TWILIO_TO=${{ secrets.TWILIO_TO }} \
-            --image registry.digitalocean.com/parlay-edge/edge:${{ github.sha }}
+            --remote-build
