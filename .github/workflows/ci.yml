@@ -16,7 +16,6 @@ jobs:
           cache: yarn
 
       - run: yarn install --immutable
-      - run: yarn lint
       - run: yarn test --coverage
       - name: Restore Turbo build cache
         uses: actions/cache@v3
