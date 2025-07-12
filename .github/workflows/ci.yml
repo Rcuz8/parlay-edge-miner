@@ -6,13 +6,15 @@ jobs:
     environment: CI/CD
     steps:
       - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
 
-      - name: Enable Corepack
-        run: corepack enable
       - run: yarn install --immutable
       - run: yarn lint
       - run: yarn test --coverage

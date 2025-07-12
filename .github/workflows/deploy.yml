@@ -8,13 +8,14 @@ jobs:
     environment: CI/CD
     steps:
       - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
 
-      - name: Enable Corepack
-        run: corepack enable
       - run: yarn install --immutable
       - name: Restore Turbo build cache
         uses: actions/cache@v3
