@@ -11,7 +11,7 @@ WORKDIR /workspace
 COPY . .
 
 # Install dependencies (offline, immutable)
-RUN yarn install --immutable --immutable-cache --check-cache
+RUN yarn install --immutable
 
 # Build only the edge-miner app (skipping tests and other packages)
 RUN yarn turbo run build --filter=apps/edge-miner
