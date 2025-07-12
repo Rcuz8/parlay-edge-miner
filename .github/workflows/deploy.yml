@@ -44,6 +44,7 @@ jobs:
 
       - name: Create environment file
         run: |
+          mkdir -p apps/edge-miner/dist
           cat <<EOF > apps/edge-miner/dist/.env
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           ODDS_API_KEY=${{ secrets.ODDS_API_KEY }}
