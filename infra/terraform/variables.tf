@@ -42,3 +42,8 @@ variable "image_tag" {
   description = "Docker image tag for function"
   type        = string
 }
+
+variable "do_project_id" {
+  description = "DigitalOcean Project ID to associate resources with"
+  type        = string
+}
