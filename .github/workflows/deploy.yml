@@ -22,7 +22,7 @@ jobs:
             ${{ runner.os }}-turbo-${{ hashFiles('**/yarn.lock') }}-
             ${{ runner.os }}-turbo-
       - run: yarn turbo run build
-      - uses: digitalocean/action-doctl@v3
+      - uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DO_TOKEN }}
       - run: |
