@@ -12,6 +12,9 @@ jobs:
         with:
           node-version: 20
           cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
       - run: yarn install --immutable
       - name: Restore Turbo build cache
         uses: actions/cache@v3

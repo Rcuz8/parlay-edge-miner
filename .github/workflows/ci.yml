@@ -10,6 +10,9 @@ jobs:
         with:
           node-version: 20
           cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
       - run: yarn install --immutable
       - run: yarn lint
       - run: yarn test --coverage
