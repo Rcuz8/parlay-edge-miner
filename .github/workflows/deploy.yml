@@ -1,0 +1,30 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install
+      - run: yarn turbo run build
+      - uses: digitalocean/action-doctl@v3
+        with:
+          token: ${{ secrets.DO_TOKEN }}
+      - run: |
+          echo ${{ secrets.DO_PSW }} | docker login -u ${{ secrets.DO_USER }} registry.digitalocean.com --password-stdin
+          docker build -t registry.digitalocean.com/parlay-edge/edge:${{ github.sha }} .
+          docker push registry.digitalocean.com/parlay-edge/edge:${{ github.sha }}
+          doctl serverless deploy parlay-edge \
+            --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            --env ODDS_API_KEY=${{ secrets.ODDS_API_KEY }} \
+            --env TWILIO_SID=${{ secrets.TWILIO_SID }} \
+            --env TWILIO_TOKEN=${{ secrets.TWILIO_TOKEN }} \
+            --env TWILIO_FROM=${{ secrets.TWILIO_FROM }} \
+            --env TWILIO_TO=${{ secrets.TWILIO_TO }} \
+            --image registry.digitalocean.com/parlay-edge/edge:${{ github.sha }}
