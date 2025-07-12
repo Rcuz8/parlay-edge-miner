@@ -15,16 +15,20 @@ WORKDIR /repo
 # Reduce the monorepo to only the workspaces needed by @parlay/edge-miner
 FROM base AS pruner
 ARG WORKSPACE="edge-miner"
+# Directory name and full package name
+ARG WORKSPACE_DIR="edge-miner"
+ARG WORKSPACE_PKG="@parlay/edge-miner"
 
 # copy the whole repo so turbo can analyse the graph
 COPY . .
 
 # Produce a pruned output (source + lockfile + package.json set) for the workspace
-RUN turbo prune --scope=$WORKSPACE --docker
+RUN turbo prune --scope=$WORKSPACE_PKG --docker
 
 # --- Builder ---------------------------------------------------------------------------
 FROM base AS builder
-ARG WORKSPACE="edge-miner"
+ARG WORKSPACE_DIR="edge-miner"
+ARG WORKSPACE_PKG="@parlay/edge-miner"
 
 WORKDIR /repo
 
@@ -33,7 +37,7 @@ COPY --from=pruner /repo/out/json/ ./
 COPY --from=pruner /repo/out/yarn.lock ./yarn.lock
 
 # Also copy the workspace's own package.json explicitly (needed by yarn focus)
-COPY apps/$WORKSPACE/package.json ./apps/$WORKSPACE/package.json
+COPY apps/$WORKSPACE_DIR/package.json ./apps/$WORKSPACE_DIR/package.json
 
 # Install only what's required for the selected workspace
 RUN yarn install --immutable
@@ -43,13 +47,13 @@ COPY --from=pruner /repo/out/full/ ./
 COPY turbo.json turbo.json
 
 # Build the workspace
-RUN yarn turbo run build --filter=apps/$WORKSPACE
+RUN yarn turbo run build --filter=apps/$WORKSPACE_DIR
 
 # Remove TS/JS source (optional slimming) and dev files
 RUN rm -rf /repo/apps/*/src /repo/packages/*/src
 
 # Focus the install to production-only dependencies of the workspace
-RUN yarn workspaces focus --production @parlay/$WORKSPACE
+RUN yarn workspaces focus --production $WORKSPACE_PKG
 
 # --- Runtime image ---------------------------------------------------------------------
 FROM node:20-alpine AS runner
@@ -67,6 +71,6 @@ COPY --from=builder /repo .
 ENV PORT=8080
 EXPOSE 8080
 
-WORKDIR /app/apps/edge-miner
+WORKDIR /app/apps/$WORKSPACE_DIR
 
 CMD ["node", "dist/handler.js"]
