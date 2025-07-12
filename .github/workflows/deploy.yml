@@ -57,5 +57,5 @@ jobs:
       - name: Deploy serverless function
         run: |
           doctl serverless deploy apps/edge-miner/dist \
-            --env-file apps/edge-miner/dist/.env \
+            --env apps/edge-miner/dist/.env \
             --remote-build
