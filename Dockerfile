@@ -29,6 +29,11 @@ COPY --from=builder /workspace/apps/edge-miner/dist ./dist
 COPY --from=builder /workspace/apps/edge-miner/package.json ./package.json
 
 # Install only production dependencies for the edge-miner package
+RUN corepack enable && corepack prepare yarn@4.1.0 --activate
+COPY --from=builder /workspace/package.json ./
+COPY --from=builder /workspace/yarn.lock ./
+COPY --from=builder /workspace/.yarn ./ ./.yarn
+COPY --from=builder /workspace/.yarnrc.yml ./
 RUN yarn workspaces focus --production apps/edge-miner
 
 EXPOSE 8080
