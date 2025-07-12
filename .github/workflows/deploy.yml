@@ -29,6 +29,8 @@ jobs:
       - uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DO_TOKEN }}
+      - name: Install serverless CLI support
+        run: doctl serverless install --no-interaction
       - run: |
           doctl serverless deploy apps/edge-miner/dist \
             --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
