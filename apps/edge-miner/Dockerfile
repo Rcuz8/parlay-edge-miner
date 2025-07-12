@@ -7,7 +7,7 @@ FROM node:20-alpine AS base
 RUN corepack enable && corepack prepare yarn@4.1.0 --activate
 
 # Turbo needs to be available in the build stages
-RUN yarn global add turbo
+RUN npm install -g turbo
 
 WORKDIR /repo
 
