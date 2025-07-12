@@ -17,7 +17,7 @@ jobs:
         with:
           token: ${{ secrets.DO_TOKEN }}
       - run: |
-          echo ${{ secrets.DO_PSW }} | docker login -u ${{ secrets.DO_USER }} registry.digitalocean.com --password-stdin
+          doctl registry login --expiry-seconds 600
           docker build -t registry.digitalocean.com/parlay-edge/edge:${{ github.sha }} .
           docker push registry.digitalocean.com/parlay-edge/edge:${{ github.sha }}
           doctl serverless deploy parlay-edge \

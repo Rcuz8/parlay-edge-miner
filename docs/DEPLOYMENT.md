@@ -20,3 +20,15 @@ LangChain, LangSmith, and LangGraph are **not** part of the runtime.  Tracing is
 3. Create PR → merge to `main` – CD workflow builds & deploys the latest image.
 
 Secrets required by the CD workflow are listed in the workflow file itself; Terraform variable definitions are the single source of truth for runtime environment variables.
+
+## GitHub Secrets
+
+* **DO_TOKEN** – DigitalOcean Personal Access Token with read/write access to Container Registry and Functions.
+* **OPENAI_API_KEY** – OpenAI API key for the LLM integration.
+* **ODDS_API_KEY** – API key for the odds service.
+* **TWILIO_SID** – Twilio account SID.
+* **TWILIO_TOKEN** – Twilio auth token.
+* **TWILIO_FROM** – Phone number messages are sent from.
+* **TWILIO_TO** – Destination phone number for alerts.
+
+Legacy `DO_USER` and `DO_PSW` secrets are no longer required; the CD pipeline now authenticates to DOCR via `doctl registry login` using the `DO_TOKEN`.
