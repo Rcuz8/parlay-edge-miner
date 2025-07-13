@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-turbo-${{ hashFiles('**/yarn.lock') }}-
             ${{ runner.os }}-turbo-
 
-      - run: yarn turbo run build --filter=apps/edge-miner
+      - run: yarn turbo run build --filter=@parlay/edge-miner
 
       - uses: digitalocean/action-doctl@v2
         with:
