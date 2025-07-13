@@ -5,7 +5,7 @@ import { ParlayService } from './services/parlay.service';
 import { NotifierService } from './services/notifier.service';
 import { Leg } from '@engine/index';
 
-export default async function handler() {
+export async function main() {
   const appContext = await NestFactory.createApplicationContext(AppModule, {
     logger: false,
   });

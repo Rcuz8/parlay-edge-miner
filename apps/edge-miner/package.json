@@ -2,11 +2,13 @@
   "name": "@parlay/edge-miner",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "main": "dist/handler.js",
   "types": "dist/handler.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest"
+    "test": "jest",
+    "postbuild": "cp package.json dist/"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
